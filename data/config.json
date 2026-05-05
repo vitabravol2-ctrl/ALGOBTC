@@ -6,5 +6,10 @@
   },
   "app": {
     "default_pair": "BTCUSDT"
+  },
+  "trading": {
+    "mode": "DRY-RUN",
+    "max_trade_usdt": 20,
+    "emergency_stop": false
   }
 }
