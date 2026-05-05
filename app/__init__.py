@@ -1,0 +1,1 @@
+"""ALGOBTC application package."""
