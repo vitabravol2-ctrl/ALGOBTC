@@ -6,6 +6,7 @@ LOGS_DIR = BASE_DIR / "logs"
 
 CONFIG_PATH = DATA_DIR / "config.json"
 ALGORITHMS_PATH = DATA_DIR / "algorithms.json"
+TRADES_PATH = DATA_DIR / "trades.json"
 ERROR_LOG_PATH = LOGS_DIR / "errors.log"
 
 
