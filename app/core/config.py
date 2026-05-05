@@ -36,10 +36,32 @@ def load_json_safe(path, default_payload: Any) -> Any:
         return deepcopy(default_payload)
 
 
+def _normalize_algorithm(item: dict[str, Any]) -> dict[str, Any]:
+    normalized = deepcopy(DEFAULT_PROFILE)
+    normalized.update(item or {})
+
+    conditions = item.get("conditions", {}) if isinstance(item, dict) else {}
+    default_conditions = deepcopy(DEFAULT_PROFILE["conditions"])
+    if isinstance(conditions, dict):
+        for key in ("entry", "exit", "stop"):
+            block = conditions.get(key, {})
+            if isinstance(block, dict):
+                default_conditions[key].update(block)
+    normalized["conditions"] = default_conditions
+
+    amount = normalized.get("trade_amount_usdt", normalized.get("amount_usdt", 20))
+    normalized["trade_amount_usdt"] = float(amount)
+    normalized["amount_usdt"] = float(amount)
+    normalized["enabled"] = bool(normalized.get("enabled", False))
+    normalized["pair"] = str(normalized.get("pair", "BTCUSDT") or "BTCUSDT").upper()
+    normalized["mode"] = "DRY-RUN"
+    return normalized
+
+
 def bootstrap_files() -> None:
     ensure_directories()
     load_json_safe(CONFIG_PATH, deepcopy(DEFAULT_CONFIG))
-    load_json_safe(ALGORITHMS_PATH, [deepcopy(DEFAULT_PROFILE)])
+    load_algorithms()
     load_json_safe(TRADES_PATH, {"trades": [], "last_trade": None})
 
 
@@ -64,8 +86,15 @@ def save_keys(api_key: str, api_secret: str) -> None:
 
 
 def load_algorithms() -> list[dict[str, Any]]:
-    return load_json_safe(ALGORITHMS_PATH, [deepcopy(DEFAULT_PROFILE)])
+    raw = load_json_safe(ALGORITHMS_PATH, [deepcopy(DEFAULT_PROFILE)])
+    raw_list = raw if isinstance(raw, list) else [deepcopy(DEFAULT_PROFILE)]
+    normalized = [_normalize_algorithm(x) for x in raw_list if isinstance(x, dict)]
+    if not normalized:
+        normalized = [deepcopy(DEFAULT_PROFILE)]
+    save_json(ALGORITHMS_PATH, normalized)
+    return normalized
 
 
 def save_algorithms(items: list[dict[str, Any]]) -> None:
-    save_json(ALGORITHMS_PATH, items)
+    normalized = [_normalize_algorithm(x) for x in items if isinstance(x, dict)]
+    save_json(ALGORITHMS_PATH, normalized or [deepcopy(DEFAULT_PROFILE)])

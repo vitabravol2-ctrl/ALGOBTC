@@ -63,8 +63,8 @@ class MainWindow(QMainWindow):
         self.position_status = QLabel("Position status: FLAT")
         self.pnl_label = QLabel("PnL %: 0.00")
         self.last_trade_label = QLabel("Last trade: -")
-        self.last_label = QLabel("Last price: -"); self.bid_label = QLabel("Bid: -"); self.ask_label = QLabel("Ask: -")
-        for x in [self.mode_label,self.active_algo_label,self.position_status,self.pnl_label,self.last_trade_label,self.last_label,self.bid_label,self.ask_label]: l.addWidget(x)
+        self.last_label = QLabel("Last price: -"); self.bid_label = QLabel("Bid: -"); self.ask_label = QLabel("Ask: -"); self.spread_label = QLabel("Spread: -")
+        for x in [self.mode_label,self.active_algo_label,self.position_status,self.pnl_label,self.last_trade_label,self.last_label,self.bid_label,self.ask_label,self.spread_label]: l.addWidget(x)
         row=QHBoxLayout();
         for t,cb in [("Connect Binance",self._test_binance),("Start BTCUSDT WS",self._start_ws),("Stop WS",self._stop_ws)]:
             b=QPushButton(t); b.clicked.connect(cb); row.addWidget(b)
@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
         w=QWidget(); l=QHBoxLayout(w)
         self.algo_list=QListWidget(); self.algo_list.addItem(self.current_profile["name"]); l.addWidget(self.algo_list,2)
         r=QVBoxLayout(); f=QFormLayout()
-        self.pair_input=QLineEdit("BTCUSDT"); self.amount_input=QLineEdit(str(self.current_profile.get("trade_amount_usdt",20)))
+        self.pair_input=QLineEdit("BTCUSDT"); self.amount_input=QLineEdit(str(self.current_profile.get("trade_amount_usdt", self.current_profile.get("amount_usdt", 20))))
         self.tick_input=QLineEdit(str(self.current_profile["conditions"]["entry"]["ticks"]))
         self.tp_input=QLineEdit(str(self.current_profile["conditions"]["exit"]["profit_percent"]))
         self.sl_input=QLineEdit(str(self.current_profile["conditions"]["stop"]["loss_percent"]))
@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
 
     def _save_algorithm(self):
         p=self.current_profile
-        p["pair"]=self.pair_input.text().strip() or "BTCUSDT"; p["trade_amount_usdt"]=float(self.amount_input.text()); p["enabled"]=self.enabled_box.isChecked()
+        p["pair"]=self.pair_input.text().strip() or "BTCUSDT"; amount=float(self.amount_input.text()); p["trade_amount_usdt"]=amount; p["amount_usdt"]=amount; p["enabled"]=self.enabled_box.isChecked()
         p["conditions"]["entry"]["ticks"]=float(self.tick_input.text()); p["conditions"]["exit"]["profit_percent"]=float(self.tp_input.text()); p["conditions"]["stop"]["loss_percent"]=float(self.sl_input.text())
         save_algorithms([p]); QMessageBox.information(self,"Algorithm","Saved")
 
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
     def _stop_algorithm(self): self.algorithm_runtime.stop_algorithm(self.current_profile["id"]); self.algo_status.setText("Algorithm status: STOPPED")
 
     def _on_price_update(self, data: dict):
-        self.last_label.setText(f"Last price: {data['last']:.2f}"); self.bid_label.setText(f"Bid: {data['bid']:.2f}"); self.ask_label.setText(f"Ask: {data['ask']:.2f}")
+        self.last_label.setText(f"Last price: {data['last']:.2f}"); self.bid_label.setText(f"Bid: {data['bid']:.2f}"); self.ask_label.setText(f"Ask: {data['ask']:.2f}"); self.spread_label.setText(f"Spread: {data.get('spread', 0.0):.6f}")
         self.algorithm_runtime.on_price_update(data)
         pos=self.algorithm_runtime.trade_engine.position
         if pos:
