@@ -1,0 +1,10 @@
+{
+  "binance": {
+    "api_key": "",
+    "api_secret": "",
+    "use_testnet": false
+  },
+  "app": {
+    "default_pair": "BTCUSDT"
+  }
+}

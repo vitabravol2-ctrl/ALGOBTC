@@ -1,0 +1,10 @@
+[
+  {
+    "id": "btcusdt_basic",
+    "name": "BTCUSDT Basic Micro Scalper",
+    "pair": "BTCUSDT",
+    "mode": "DRY-RUN",
+    "status": "Draft",
+    "description": "First BTCUSDT IF-THEN micro scalping algorithm"
+  }
+]
