@@ -1,0 +1,8 @@
+PySide6
+httpx
+websockets
+python-binance
+pydantic
+python-dotenv
+loguru
+orjson
